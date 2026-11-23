@@ -56,7 +56,7 @@ router.post('/', requireRole('dosen'), async (req, res) => {
   const kode_mk = String(req.body.kode_mk || '').trim().toUpperCase();
   const nama_mk = String(req.body.nama_mk || '').trim();
   const sks = Number(req.body.sks || 2);
-  const semester = req.body.semester ? Number(req.body.semester) : null;
+  const semester = Number(req.body.semester);
 
   if (!kode_mk || !nama_mk) {
     return res.status(400).json({ error: 'Kode MK dan Nama MK wajib diisi.' });
@@ -64,6 +64,9 @@ router.post('/', requireRole('dosen'), async (req, res) => {
   if (sks < 1 || sks > 6) {
     return res.status(400).json({ error: 'SKS harus antara 1 sampai 6.' });
   }
+  if (!Number.isInteger(semester) || semester < 1 || semester > 14) {
+  return res.status(400).json({ error: 'Semester wajib diisi (angka 1 sampai 14).' });
+}
 
   try {
     const result = await q(
@@ -92,7 +95,7 @@ router.put('/:id', requireRole('dosen'), async (req, res) => {
   const kode_mk = String(req.body.kode_mk || mk.kode_mk).trim().toUpperCase();
   const nama_mk = String(req.body.nama_mk || mk.nama_mk).trim();
   const sks = req.body.sks !== undefined ? Number(req.body.sks) : mk.sks;
-  const semester = req.body.semester !== undefined ? (req.body.semester ? Number(req.body.semester) : null) : mk.semester;
+  const semester = req.body.semester !== undefined ? Number(req.body.semester) : mk.semester;
 
   if (!kode_mk || !nama_mk) {
     return res.status(400).json({ error: 'Kode MK dan Nama MK tidak boleh kosong.' });
