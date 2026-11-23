@@ -5,6 +5,7 @@ import AdminAkun from './pages/AdminAkun.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import ForgotPassword from './pages/ForgotPassword.jsx';
 import Login from './pages/Login.jsx';
+import MataKuliah from './pages/MataKuliah.jsx';
 import Profil from './pages/Profil.jsx';
 import Register from './pages/Register.jsx';
 import ResetPassword from './pages/ResetPassword.jsx';
@@ -35,7 +36,9 @@ export default function App() {
           <Route element={<RequireAuth roles={['admin']} />}>
             <Route path="admin/akun" element={<AdminAkun />} />
           </Route>
-          {/* Anggota lain: tambahkan <Route path="kelas" element={<Kelas />} /> di sini. */}
+          <Route element={<RequireAuth roles={['dosen', 'admin']} />}>
+            <Route path="mata-kuliah" element={<MataKuliah />} />
+          </Route>
           <Route path="*" element={<NotFound />} />
         </Route>
       </Route>

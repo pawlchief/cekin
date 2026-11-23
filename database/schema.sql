@@ -43,3 +43,36 @@ CREATE TABLE IF NOT EXISTS sessions (
   expires    INT UNSIGNED NOT NULL,
   data       MEDIUMTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin
 ) ENGINE=InnoDB;
+
+
+-- ==========================================
+-- Modul CRUD Mata Kuliah & Kelas (Issue #11)
+-- ==========================================
+
+CREATE TABLE IF NOT EXISTS mata_kuliah (
+  id         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  kode_mk    VARCHAR(20)  NOT NULL,
+  nama_mk    VARCHAR(150) NOT NULL,
+  sks        TINYINT UNSIGNED NOT NULL DEFAULT 2,
+  semester   TINYINT UNSIGNED NULL,
+  dosen_id   INT UNSIGNED NOT NULL COMMENT 'Pemilik/pembuat mata kuliah (role dosen)',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_kode_mk_dosen (kode_mk, dosen_id),
+  KEY idx_mk_dosen (dosen_id),
+  CONSTRAINT fk_mk_dosen FOREIGN KEY (dosen_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS kelas (
+  id                  INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  mata_kuliah_id      INT UNSIGNED NOT NULL,
+  nama_kelas          VARCHAR(50)  NOT NULL COMMENT 'Contoh: A, B, IF-4A',
+  tahun_ajaran        VARCHAR(20)  NULL COMMENT 'Contoh: 2026/2027 Ganjil',
+  kode_join           VARCHAR(12)  NOT NULL COMMENT 'Kode acak unik untuk mahasiswa join',
+  is_pendaftaran_buka BOOLEAN      NOT NULL DEFAULT TRUE COMMENT 'Status buka/tutup pendaftaran (#15)',
+  created_at          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_kelas_kode_join (kode_join),
+  KEY idx_kelas_mk (mata_kuliah_id),
+  CONSTRAINT fk_kelas_mk FOREIGN KEY (mata_kuliah_id) REFERENCES mata_kuliah(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
