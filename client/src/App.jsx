@@ -4,10 +4,12 @@ import Layout from './components/Layout.jsx';
 import AdminAkun from './pages/AdminAkun.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import ForgotPassword from './pages/ForgotPassword.jsx';
+import Laporan from './pages/Laporan.jsx';
 import Login from './pages/Login.jsx';
 import MataKuliah from './pages/MataKuliah.jsx';
 import Profil from './pages/Profil.jsx';
 import Register from './pages/Register.jsx';
+import Rekap from './pages/Rekap.jsx';
 import ResetPassword from './pages/ResetPassword.jsx';
 import { Forbidden, NotFound } from './pages/Status.jsx';
 
@@ -38,6 +40,12 @@ export default function App() {
           </Route>
           <Route element={<RequireAuth roles={['dosen', 'admin']} />}>
             <Route path="mata-kuliah" element={<MataKuliah />} />
+          </Route>
+          <Route element={<RequireAuth roles={['dosen', 'mahasiswa']} />}>
+            <Route path="rekap" element={<Rekap />} />
+          </Route>
+          <Route element={<RequireAuth roles={['dosen']} />}>
+            <Route path="rekap/laporan" element={<Laporan />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Route>

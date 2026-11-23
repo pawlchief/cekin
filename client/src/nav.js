@@ -8,9 +8,13 @@ export const NAV = {
   ],
   dosen: [
     { to: '/', label: 'Dashboard', icon: 'grid', end: true },
-    { to: '/mata-kuliah', label: 'Mata Kuliah', icon: 'book' }
+    { to: '/mata-kuliah', label: 'Mata Kuliah', icon: 'book' },
+    { to: '/rekap', label: 'Rekap & Laporan', icon: 'trend' }
   ],
-  mahasiswa: [{ to: '/', label: 'Dashboard', icon: 'grid', end: true }]
+  mahasiswa: [
+    { to: '/', label: 'Dashboard', icon: 'grid', end: true },
+    { to: '/rekap', label: 'Rekap Kehadiran', icon: 'trend' }
+  ]
 };
 
 export const ROLE_LABEL = { admin: 'Administrator', dosen: 'Dosen', mahasiswa: 'Mahasiswa' };

@@ -76,3 +76,48 @@ CREATE TABLE IF NOT EXISTS kelas (
   KEY idx_kelas_mk (mata_kuliah_id),
   CONSTRAINT fk_kelas_mk FOREIGN KEY (mata_kuliah_id) REFERENCES mata_kuliah(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ==========================================================
+-- Modul Rekap Kehadiran & Laporan Presensi (Issue #41)
+-- SEMENTARA: kelas_mahasiswa, sesi_pertemuan, dan presensi belum
+-- dibuat anggota lain. Samakan nama kolomnya bila modul join kelas
+-- dan presensi sudah ada.
+-- ==========================================================
+
+-- Mahasiswa yang terdaftar di sebuah kelas.
+CREATE TABLE IF NOT EXISTS kelas_mahasiswa (
+  id           INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  kelas_id     INT UNSIGNED NOT NULL,
+  mahasiswa_id INT UNSIGNED NOT NULL,
+  joined_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_kelas_mhs (kelas_id, mahasiswa_id),
+  KEY idx_km_mhs (mahasiswa_id),
+  CONSTRAINT fk_km_kelas FOREIGN KEY (kelas_id) REFERENCES kelas(id) ON DELETE CASCADE,
+  CONSTRAINT fk_km_mhs FOREIGN KEY (mahasiswa_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Satu baris = satu pertemuan yang sudah/akan dilaksanakan di sebuah kelas.
+CREATE TABLE IF NOT EXISTS sesi_pertemuan (
+  id           INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  kelas_id     INT UNSIGNED NOT NULL,
+  pertemuan_ke SMALLINT UNSIGNED NOT NULL,
+  tanggal      DATE NOT NULL,
+  topik        VARCHAR(150) NULL,
+  created_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_sesi_kelas_ke (kelas_id, pertemuan_ke),
+  CONSTRAINT fk_sesi_kelas FOREIGN KEY (kelas_id) REFERENCES kelas(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Satu baris = status satu mahasiswa di satu pertemuan.
+-- Mahasiswa tanpa baris di sini untuk suatu pertemuan dianggap alpa.
+CREATE TABLE IF NOT EXISTS presensi (
+  id           INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  sesi_id      INT UNSIGNED NOT NULL,
+  mahasiswa_id INT UNSIGNED NOT NULL,
+  status       ENUM('hadir','izin','sakit','alpa') NOT NULL DEFAULT 'hadir',
+  created_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_presensi (sesi_id, mahasiswa_id),
+  KEY idx_presensi_mhs (mahasiswa_id),
+  CONSTRAINT fk_presensi_sesi FOREIGN KEY (sesi_id) REFERENCES sesi_pertemuan(id) ON DELETE CASCADE,
+  CONSTRAINT fk_presensi_mhs FOREIGN KEY (mahasiswa_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
