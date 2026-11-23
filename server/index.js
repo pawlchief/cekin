@@ -64,9 +64,10 @@ api.use('/dashboard', require('./routes/dashboard'));
 api.use('/profil', require('./routes/profil'));
 api.use('/admin', require('./routes/admin'));
 // Anggota lain: pasang router modulmu di bawah baris ini, mis. api.use('/kelas', require('./routes/kelas'));
+api.use('/mata-kuliah', require('./routes/mataKuliah'));
+api.use('/kelas', require('./routes/kelas'));
 api.use((req, res) => res.status(404).json({ error: 'Endpoint tidak ditemukan.' }));
 app.use('/api', api);
-
 // ---------- React (hasil build) ----------
 const dist = path.join(__dirname, '..', 'client', 'dist');
 if (fs.existsSync(dist)) {
