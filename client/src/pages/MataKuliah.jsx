@@ -93,7 +93,7 @@ export default function MataKuliah() {
       setNotice(res.message);
       mkDialog.current.close();
       await loadMatkul();
-      if (expandedId === formMk.id) await loadDetailKelas(formMk.id);
+      if (formMk.id && expandedId === formMk.id) await loadDetailKelas(formMk.id);
     } catch (e) {
       setModalErr(e.message);
     }
@@ -451,7 +451,7 @@ export default function MataKuliah() {
                 onChange={(e) => setFormMk({ ...formMk, sks: e.target.value })}
               />
             </Field>
-            <Field label="Semester (Opsional)" id="mk-sem">
+            <Field label="Semester" id="mk-sem">
               <input
                 id="mk-sem"
                 className="input"
