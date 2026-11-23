@@ -4,7 +4,7 @@ export const NAV = {
   admin: [
     { to: '/', label: 'Dashboard', icon: 'grid', end: true },
     { to: '/admin/akun', label: 'Kelola Akun', icon: 'users' },
-    { to: '/mata-kuliah', label: 'Mata Kuliah', icon: 'book' }
+    { to: '/mata-kuliah', label: 'Semua Kelas', icon: 'book' }
   ],
   dosen: [
     { to: '/', label: 'Dashboard', icon: 'grid', end: true },

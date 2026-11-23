@@ -2,29 +2,25 @@ const router = require('express').Router();
 const { q, one } = require('../config/db');
 const { requireRole } = require('../middleware/auth');
 
-// Semua endpoint di sini hanya untuk dosen dan admin
 router.use(requireRole('dosen', 'admin'));
 
-// GET /api/mata-kuliah -> Dosen lihat miliknya, Admin lihat semua (#12, #17)
+// GET /api/mata-kuliah -> List mata kuliah + jumlah kelas di dalamnya
 router.get('/', async (req, res) => {
+  const baseSelect = `
+    SELECT mk.*,
+           u.nama AS nama_dosen,
+           u.nim_nip AS nip_dosen,
+           (SELECT COUNT(*) FROM kelas k WHERE k.mata_kuliah_id = mk.id) AS jumlah_kelas
+    FROM mata_kuliah mk
+    JOIN users u ON u.id = mk.dosen_id
+  `;
+
   if (req.user.role === 'admin') {
-    const rows = await q(
-      `SELECT mk.*, u.nama AS nama_dosen, u.nim_nip AS nip_dosen
-       FROM mata_kuliah mk
-       JOIN users u ON u.id = mk.dosen_id
-       ORDER BY mk.created_at DESC`
-    );
+    const rows = await q(`${baseSelect} ORDER BY mk.created_at DESC`);
     return res.json({ data: rows });
   }
 
-  const rows = await q(
-    `SELECT mk.*, u.nama AS nama_dosen, u.nim_nip AS nip_dosen
-     FROM mata_kuliah mk
-     JOIN users u ON u.id = mk.dosen_id
-     WHERE mk.dosen_id = ?
-     ORDER BY mk.created_at DESC`,
-    [req.user.id]
-  );
+  const rows = await q(`${baseSelect} WHERE mk.dosen_id = ? ORDER BY mk.created_at DESC`, [req.user.id]);
   res.json({ data: rows });
 });
 
@@ -51,12 +47,12 @@ router.get('/:id', async (req, res) => {
   res.json({ data: { ...mk, kelas } });
 });
 
-// POST /api/mata-kuliah -> Tambah mata kuliah baru (khusus dosen) (#12)
+// POST /api/mata-kuliah -> Tambah mata kuliah baru (khusus dosen)
 router.post('/', requireRole('dosen'), async (req, res) => {
   const kode_mk = String(req.body.kode_mk || '').trim().toUpperCase();
   const nama_mk = String(req.body.nama_mk || '').trim();
   const sks = Number(req.body.sks || 2);
-  const semester = Number(req.body.semester);
+  const semester = req.body.semester ? Number(req.body.semester) : null;
 
   if (!kode_mk || !nama_mk) {
     return res.status(400).json({ error: 'Kode MK dan Nama MK wajib diisi.' });
@@ -64,9 +60,6 @@ router.post('/', requireRole('dosen'), async (req, res) => {
   if (sks < 1 || sks > 6) {
     return res.status(400).json({ error: 'SKS harus antara 1 sampai 6.' });
   }
-  if (!Number.isInteger(semester) || semester < 1 || semester > 14) {
-  return res.status(400).json({ error: 'Semester wajib diisi (angka 1 sampai 14).' });
-}
 
   try {
     const result = await q(
@@ -84,7 +77,7 @@ router.post('/', requireRole('dosen'), async (req, res) => {
   }
 });
 
-// PUT /api/mata-kuliah/:id -> Edit mata kuliah (hanya dosen pemiliknya) (#16)
+// PUT /api/mata-kuliah/:id -> Edit mata kuliah (hanya dosen pemiliknya)
 router.put('/:id', requireRole('dosen'), async (req, res) => {
   const mk = await one(`SELECT * FROM mata_kuliah WHERE id = ?`, [req.params.id]);
   if (!mk) return res.status(404).json({ error: 'Mata kuliah tidak ditemukan.' });
@@ -95,7 +88,8 @@ router.put('/:id', requireRole('dosen'), async (req, res) => {
   const kode_mk = String(req.body.kode_mk || mk.kode_mk).trim().toUpperCase();
   const nama_mk = String(req.body.nama_mk || mk.nama_mk).trim();
   const sks = req.body.sks !== undefined ? Number(req.body.sks) : mk.sks;
-  const semester = req.body.semester !== undefined ? Number(req.body.semester) : mk.semester;
+  const semester =
+    req.body.semester !== undefined ? (req.body.semester ? Number(req.body.semester) : null) : mk.semester;
 
   if (!kode_mk || !nama_mk) {
     return res.status(400).json({ error: 'Kode MK dan Nama MK tidak boleh kosong.' });
@@ -116,7 +110,7 @@ router.put('/:id', requireRole('dosen'), async (req, res) => {
   }
 });
 
-// DELETE /api/mata-kuliah/:id -> Hapus mata kuliah (dosen pemilik atau admin) (#16, #17)
+// DELETE /api/mata-kuliah/:id -> Hapus mata kuliah (dosen pemilik atau admin)
 router.delete('/:id', async (req, res) => {
   const mk = await one(`SELECT * FROM mata_kuliah WHERE id = ?`, [req.params.id]);
   if (!mk) return res.status(404).json({ error: 'Mata kuliah tidak ditemukan.' });
