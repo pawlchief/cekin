@@ -13,8 +13,8 @@ export const NAV = {
   dosen: [
     { to: '/', label: 'Dashboard', icon: 'grid', end: true },
     { to: '/mata-kuliah', label: 'Mata Kuliah', icon: 'book' },
-    { to: '/rekap', label: 'Rekap & Laporan', icon: 'trend' },
-    { to: '/jadwal', label: 'Jadwal', icon: 'cal' }
+    { to: '/jadwal', label: 'Jadwal', icon: 'cal' },
+    { to: '/rekap', label: 'Rekap & Laporan', icon: 'trend' }
   ],
 
   mahasiswa: [
