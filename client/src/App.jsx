@@ -10,6 +10,7 @@ import Profil from './pages/Profil.jsx';
 import Register from './pages/Register.jsx';
 import ResetPassword from './pages/ResetPassword.jsx';
 import { Forbidden, NotFound } from './pages/Status.jsx';
+import Jadwal from './pages/Jadwal.jsx';
 
 // Pelindung halaman. Ini hanya untuk UX; hak akses yang sebenarnya dicek di server (requireRole).
 function RequireAuth({ roles }) {
@@ -38,6 +39,9 @@ export default function App() {
           </Route>
           <Route element={<RequireAuth roles={['dosen', 'admin']} />}>
             <Route path="mata-kuliah" element={<MataKuliah />} />
+          </Route>
+            <Route element={<RequireAuth roles={['dosen']} />}>
+            <Route path="jadwal" element={<Jadwal />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Route>
