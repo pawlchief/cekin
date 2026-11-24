@@ -102,7 +102,33 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
         console.log('Indeks UNIQUE jadwal.kelas_id ditambahkan.');
       }
     }
-    
+    const [[{ jumlahAdmin }]] = await conn.query("SELECT COUNT(*) AS jumlahAdmin FROM users WHERE role = 'admin'");
+    if (Number(jumlahAdmin) === 0) {
+      const { ADMIN_NAMA = 'Admin Cekin', ADMIN_EMAIL, ADMIN_USERNAME = 'admin', ADMIN_PASSWORD } = process.env;
+      if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
+        console.log('Belum ada admin. Isi ADMIN_EMAIL dan ADMIN_PASSWORD di .env, lalu jalankan npm run db:init lagi.');
+      } else {
+        const V = require('../server/lib/validate');
+        const email = V.email(ADMIN_EMAIL);
+        const username = V.nimNip(ADMIN_USERNAME);
+        const pwErr = V.passwordError(ADMIN_PASSWORD);
+        if (!email || !username || pwErr) {
+          console.warn('ADMIN_EMAIL / ADMIN_USERNAME / ADMIN_PASSWORD di .env tidak valid.' + (pwErr ? ` ${pwErr}` : ''));
+        } else {
+          try {
+            const hash = await require('bcryptjs').hash(ADMIN_PASSWORD, 12);
+            await conn.query(
+              "INSERT INTO users (nama, email, nim_nip, password_hash, role, status) VALUES (?, ?, ?, ?, 'admin', 'aktif')",
+              [ADMIN_NAMA, email, username, hash]
+            );
+            console.log(`Akun admin dibuat. Masuk dengan username "${username}".`);
+          } catch (e) {
+            if (e.code !== 'ER_DUP_ENTRY') throw e;
+            console.warn('Admin tidak dibuat: email atau username itu sudah dipakai akun lain. Ganti ADMIN_EMAIL / ADMIN_USERNAME di .env.');
+          }
+        }
+      }
+    }
     console.log('Skema database siap.');
   } finally {
     await conn.end();
