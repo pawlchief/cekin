@@ -1,10 +1,11 @@
-
 import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom';
 import { useAuth } from './auth.jsx';
 import Layout from './components/Layout.jsx';
 import AdminAkun from './pages/AdminAkun.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import ForgotPassword from './pages/ForgotPassword.jsx';
+import Jadwal from './pages/Jadwal.jsx';
+import JadwalKuliah from './pages/JadwalKuliah.jsx';
 import Laporan from './pages/Laporan.jsx';
 import Login from './pages/Login.jsx';
 import MataKuliah from './pages/MataKuliah.jsx';
@@ -13,7 +14,6 @@ import Register from './pages/Register.jsx';
 import Rekap from './pages/Rekap.jsx';
 import ResetPassword from './pages/ResetPassword.jsx';
 import { Forbidden, NotFound } from './pages/Status.jsx';
-import Jadwal from './pages/Jadwal.jsx';
 
 // Pelindung halaman. Hak akses sebenarnya dicek di server.
 function RequireAuth({ roles }) {
@@ -41,6 +41,11 @@ function RequireAuth({ roles }) {
   return <Outlet />;
 }
 
+function JadwalRoute() {
+  const { user } = useAuth();
+  return user.role === 'mahasiswa' ? <JadwalKuliah /> : <Jadwal />;
+}
+
 export default function App() {
   return (
     <Routes>
@@ -63,15 +68,12 @@ export default function App() {
           </Route>
 
           <Route element={<RequireAuth roles={['dosen', 'mahasiswa']} />}>
+            <Route path="jadwal" element={<JadwalRoute />} />
             <Route path="rekap" element={<Rekap />} />
           </Route>
 
           <Route element={<RequireAuth roles={['dosen']} />}>
             <Route path="rekap/laporan" element={<Laporan />} />
-          </Route>
-
-          <Route element={<RequireAuth roles={['dosen']} />}>
-            <Route path="jadwal" element={<Jadwal />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />

@@ -1,4 +1,3 @@
-
 // Menu sidebar per role. Anggota lain tinggal menambah item modulnya di sini
 // (icon: grid, users, book, cal, user — lihat components/Icon.jsx).
 // Profil sudah ada di kartu pengguna sidebar.
@@ -19,6 +18,7 @@ export const NAV = {
 
   mahasiswa: [
     { to: '/', label: 'Dashboard', icon: 'grid', end: true },
+    { to: '/jadwal', label: 'Jadwal', icon: 'cal' },
     { to: '/rekap', label: 'Rekap Kehadiran', icon: 'trend' }
   ]
 };
