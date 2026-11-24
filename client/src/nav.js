@@ -11,7 +11,10 @@ export const NAV = {
     { to: '/mata-kuliah', label: 'Mata Kuliah', icon: 'book' },
     { to: '/jadwal', label: 'Jadwal', icon: 'cal' }
   ],
-  mahasiswa: [{ to: '/', label: 'Dashboard', icon: 'grid', end: true }]
+  mahasiswa: [
+    { to: '/', label: 'Dashboard', icon: 'grid', end: true },
+    { to: '/jadwal', label: 'Jadwal', icon: 'cal' }
+  ]
 };
 
 export const ROLE_LABEL = { admin: 'Administrator', dosen: 'Dosen', mahasiswa: 'Mahasiswa' };

@@ -11,6 +11,7 @@ import Register from './pages/Register.jsx';
 import ResetPassword from './pages/ResetPassword.jsx';
 import { Forbidden, NotFound } from './pages/Status.jsx';
 import Jadwal from './pages/Jadwal.jsx';
+import JadwalKuliah from './pages/JadwalKuliah.jsx';
 
 // Pelindung halaman. Ini hanya untuk UX; hak akses yang sebenarnya dicek di server (requireRole).
 function RequireAuth({ roles }) {
@@ -20,6 +21,11 @@ function RequireAuth({ roles }) {
   if (!user) return <Navigate to="/login" state={{ from: loc.pathname + loc.search }} replace />;
   if (roles && !roles.includes(user.role)) return <Forbidden />;
   return <Outlet />;
+}
+
+function JadwalRoute() {
+  const { user } = useAuth();
+  return user.role === 'mahasiswa' ? <JadwalKuliah /> : <Jadwal />;
 }
 
 export default function App() {
@@ -40,8 +46,8 @@ export default function App() {
           <Route element={<RequireAuth roles={['dosen', 'admin']} />}>
             <Route path="mata-kuliah" element={<MataKuliah />} />
           </Route>
-            <Route element={<RequireAuth roles={['dosen']} />}>
-            <Route path="jadwal" element={<Jadwal />} />
+          <Route element={<RequireAuth roles={['dosen', 'mahasiswa']} />}>
+            <Route path="jadwal" element={<JadwalRoute />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Route>
