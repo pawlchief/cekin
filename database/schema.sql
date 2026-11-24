@@ -76,3 +76,20 @@ CREATE TABLE IF NOT EXISTS kelas (
   KEY idx_kelas_mk (mata_kuliah_id),
   CONSTRAINT fk_kelas_mk FOREIGN KEY (mata_kuliah_id) REFERENCES mata_kuliah(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ==========================================
+-- Modul Jadwal Perkuliahan (Issue #18)
+-- ==========================================
+
+CREATE TABLE IF NOT EXISTS jadwal (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  kelas_id INT UNSIGNED NOT NULL,
+  hari ENUM('senin','selasa','rabu','kamis','jumat') NOT NULL,
+  jam_mulai TIME NOT NULL,
+  jam_selesai TIME NOT NULL,
+  ruang VARCHAR(50) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_jadwal_hari_ruang (hari, ruang),
+  CONSTRAINT fk_jadwal_kelas FOREIGN KEY (kelas_id) REFERENCES kelas(id) ON DELETE CASCADE
+);

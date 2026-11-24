@@ -66,6 +66,7 @@ api.use('/admin', require('./routes/admin'));
 // Anggota lain: pasang router modulmu di bawah baris ini, mis. api.use('/kelas', require('./routes/kelas'));
 api.use('/mata-kuliah', require('./routes/mataKuliah'));
 api.use('/kelas', require('./routes/kelas'));
+api.use('/jadwal', require('./routes/jadwal'));
 api.use((req, res) => res.status(404).json({ error: 'Endpoint tidak ditemukan.' }));
 app.use('/api', api);
 // ---------- React (hasil build) ----------
