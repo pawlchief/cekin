@@ -15,7 +15,7 @@ export default function Layout() {
 
   return (
     <div className="flex min-h-screen bg-gradient-to-b from-latar to-field">
-      <aside className="sticky top-0 hidden h-screen w-[248px] shrink-0 flex-col gap-1.5 overflow-hidden bg-gradient-to-b from-navy to-royal px-5 py-6 lg:flex">
+      <aside className="sticky top-0 hidden h-screen w-[248px] shrink-0 flex-col gap-1.5 overflow-hidden bg-gradient-to-b from-navy to-royal px-5 py-6 lg:flex print:!hidden">
         <Deco className="-top-[70px] left-[110px] size-[230px]" />
         <Deco className="-bottom-[60px] -left-[90px] size-[250px]" />
         <div className="relative"><Lockup size={36} /></div>
@@ -43,11 +43,11 @@ export default function Layout() {
         </div>
       </aside>
 
-      <main className="min-w-0 flex-1 p-5 pb-28 lg:p-9">
+      <main className="min-w-0 flex-1 p-5 pb-28 lg:p-9 print:p-0">
         <div className="mx-auto max-w-[1180px]"><Outlet /></div>
       </main>
 
-      <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-line bg-white lg:hidden" aria-label="Menu utama">
+      <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-line bg-white lg:hidden print:!hidden" aria-label="Menu utama">
         {tabs.map((t) => (
           <NavLink key={t.to} to={t.to} end={t.end} className="flex flex-1 flex-col items-center gap-1 py-2 text-[11px] font-medium text-muted">
             {({ isActive }) => (

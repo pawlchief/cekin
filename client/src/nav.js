@@ -1,21 +1,40 @@
+
 // Menu sidebar per role. Anggota lain tinggal menambah item modulnya di sini
-// (icon: grid, users, book, cal, user — lihat components/Icon.jsx). Profil sudah ada di kartu pengguna sidebar.
+// (icon: grid, users, book, cal, user — lihat components/Icon.jsx).
+// Profil sudah ada di kartu pengguna sidebar.
+
 export const NAV = {
   admin: [
     { to: '/', label: 'Dashboard', icon: 'grid', end: true },
     { to: '/admin/akun', label: 'Kelola Akun', icon: 'users' },
     { to: '/mata-kuliah', label: 'Semua Kelas', icon: 'book' }
   ],
+
   dosen: [
     { to: '/', label: 'Dashboard', icon: 'grid', end: true },
     { to: '/mata-kuliah', label: 'Mata Kuliah', icon: 'book' },
-    { to: '/jadwal', label: 'Jadwal', icon: 'cal' }
+    { to: '/jadwal', label: 'Jadwal', icon: 'cal' },
+    { to: '/rekap', label: 'Rekap & Laporan', icon: 'trend' }
   ],
-  mahasiswa: [{ to: '/', label: 'Dashboard', icon: 'grid', end: true }]
+
+  mahasiswa: [
+    { to: '/', label: 'Dashboard', icon: 'grid', end: true },
+    { to: '/rekap', label: 'Rekap Kehadiran', icon: 'trend' }
+  ]
 };
 
-export const ROLE_LABEL = { admin: 'Administrator', dosen: 'Dosen', mahasiswa: 'Mahasiswa' };
-export const ID_LABEL = { admin: 'Username', dosen: 'NIP', mahasiswa: 'NIM' };
+export const ROLE_LABEL = {
+  admin: 'Administrator',
+  dosen: 'Dosen',
+  mahasiswa: 'Mahasiswa'
+};
+
+export const ID_LABEL = {
+  admin: 'Username',
+  dosen: 'NIP',
+  mahasiswa: 'NIM'
+};
+
 export const STATUS_BADGE = {
   aktif: ['badge-ok', 'Aktif'],
   pending: ['badge-warn', 'Menunggu'],
@@ -23,6 +42,15 @@ export const STATUS_BADGE = {
   nonaktif: ['badge-off', 'Nonaktif']
 };
 
-const BULAN = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-export const fmtTanggal = (s) => (s ? `${Number(s.slice(8, 10))} ${BULAN[Number(s.slice(5, 7)) - 1]} ${s.slice(0, 4)}` : '-');
-export const fmtWaktu = (s) => (s ? `${fmtTanggal(s)}, ${s.slice(11, 16)}` : '-');
+const BULAN = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+  'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
+];
+
+export const fmtTanggal = (s) =>
+  (s
+    ? `${Number(s.slice(8, 10))} ${BULAN[Number(s.slice(5, 7)) - 1]} ${s.slice(0, 4)}`
+    : '-');
+
+export const fmtWaktu = (s) =>
+  (s ? `${fmtTanggal(s)}, ${s.slice(11, 16)}` : '-');
