@@ -75,6 +75,16 @@ export default function Jadwal() {
 
   const editing = form.id !== null;
 
+  // Satu kelas = satu jadwal: sembunyikan kelas yang sudah berjadwal
+  // (kecuali kelas dari jadwal yang sedang diubah).
+  const kelasTersedia = useMemo(
+    () =>
+      kelas.filter(
+        (k) => k.id === Number(form.kelas_id) || !jadwal.some((j) => j.kelas_id === k.id)
+      ),
+    [kelas, jadwal, form.kelas_id]
+  );
+
   function mulaiEdit(j) {
     setNotice('');
     setFormErr(null);
@@ -230,16 +240,21 @@ export default function Jadwal() {
               onChange={(e) => setForm({ ...form, kelas_id: e.target.value })}
             >
               <option value="">Pilih kelas</option>
-              {kelas.map((k) => (
+              {kelasTersedia.map((k) => (
                 <option key={k.id} value={k.id}>
                   {k.nama_mk} · {k.nama_kelas}
                 </option>
               ))}
             </select>
           </Field>
-          {kelas.length === 0 && !loading && (
+          {!loading && kelas.length === 0 && (
             <p className="text-xs text-muted">
               Belum ada kelas. Buat kelas dulu di menu Mata Kuliah, lalu kembali ke sini.
+            </p>
+          )}
+          {!loading && kelas.length > 0 && kelasTersedia.length === 0 && (
+            <p className="text-xs text-muted">
+              Semua kelas sudah punya jadwal. Klik kartu jadwal di kalender untuk mengubahnya.
             </p>
           )}
 
@@ -310,7 +325,7 @@ export default function Jadwal() {
                 Batal
               </button>
             )}
-            <button className="btn-primary w-full" disabled={saving || kelas.length === 0}>
+            <button className="btn-primary w-full" disabled={saving || kelasTersedia.length === 0}>
               {saving ? 'Menyimpan...' : editing ? 'Simpan perubahan' : 'Simpan jadwal'}
             </button>
           </div>

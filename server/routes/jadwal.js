@@ -100,16 +100,29 @@ router.post('/', requireRole('dosen'), async (req, res) => {
     return res.status(403).json({ error: 'Kamu hanya bisa menambah jadwal pada kelas milikmu sendiri.' });
   }
 
+  const sudah = await one('SELECT id FROM jadwal WHERE kelas_id = ? LIMIT 1', [kelas.id]);
+  if (sudah) {
+    return res.status(400).json({ error: 'Kelas ini sudah punya jadwal. Ubah jadwal yang ada, atau hapus dulu.' });
+  }
+
   const v = validasiInput(req.body);
   if (v.error) return res.status(400).json({ error: v.error });
 
   const bentrok = await cariBentrok(v.data, kelas.dosen_id);
   if (bentrok) return res.status(409).json({ error: `Jadwal bentrok. ${bentrok}` });
 
-  const result = await q(
-    `INSERT INTO jadwal (kelas_id, hari, jam_mulai, jam_selesai, ruang) VALUES (?, ?, ?, ?, ?)`,
-    [kelas.id, v.data.hari, v.data.jam_mulai, v.data.jam_selesai, v.data.ruang]
-  );
+  let result;
+  try {
+    result = await q(
+      `INSERT INTO jadwal (kelas_id, hari, jam_mulai, jam_selesai, ruang) VALUES (?, ?, ?, ?, ?)`,
+      [kelas.id, v.data.hari, v.data.jam_mulai, v.data.jam_selesai, v.data.ruang]
+    );
+  } catch (err) {
+    if (err.code === 'ER_DUP_ENTRY') {
+      return res.status(400).json({ error: 'Kelas ini sudah punya jadwal.' });
+    }
+    throw err;
+  };
   const created = await one(`${SELECT_JADWAL} WHERE j.id = ?`, [result.insertId]);
   res.status(201).json({ message: 'Jadwal berhasil ditambahkan.', data: rapikan(created) });
 });

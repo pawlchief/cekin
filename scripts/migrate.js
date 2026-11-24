@@ -82,6 +82,27 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
       }
     }
 
+    // Satu kelas = satu jadwal mingguan: tambahkan indeks UNIQUE pada tabel lama.
+    const [uqJadwal] = await conn.query(
+      "SELECT 1 FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'jadwal' AND INDEX_NAME = 'uq_jadwal_kelas' LIMIT 1"
+    );
+
+    if (!uqJadwal.length) {
+      const [ganda] = await conn.query(
+        'SELECT kelas_id FROM jadwal GROUP BY kelas_id HAVING COUNT(*) > 1'
+      );
+
+      if (ganda.length) {
+        console.warn(
+          `PERINGATAN: kelas_id ${ganda.map((g) => g.kelas_id).join(', ')} punya lebih dari satu jadwal. ` +
+          'Hapus jadwal gandanya dulu, lalu jalankan npm run db:init lagi.'
+        );
+      } else {
+        await conn.query('ALTER TABLE jadwal ADD UNIQUE KEY uq_jadwal_kelas (kelas_id)');
+        console.log('Indeks UNIQUE jadwal.kelas_id ditambahkan.');
+      }
+    }
+    
     console.log('Skema database siap.');
   } finally {
     await conn.end();

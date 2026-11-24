@@ -90,6 +90,7 @@ CREATE TABLE IF NOT EXISTS jadwal (
   ruang VARCHAR(50) NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_jadwal_kelas (kelas_id),
   INDEX idx_jadwal_hari_ruang (hari, ruang),
   CONSTRAINT fk_jadwal_kelas FOREIGN KEY (kelas_id) REFERENCES kelas(id) ON DELETE CASCADE
 );
