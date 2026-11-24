@@ -8,7 +8,8 @@ export const NAV = {
   ],
   dosen: [
     { to: '/', label: 'Dashboard', icon: 'grid', end: true },
-    { to: '/mata-kuliah', label: 'Mata Kuliah', icon: 'book' }
+    { to: '/mata-kuliah', label: 'Mata Kuliah', icon: 'book' },
+    { to: '/jadwal', label: 'Jadwal', icon: 'cal' }
   ],
   mahasiswa: [{ to: '/', label: 'Dashboard', icon: 'grid', end: true }]
 };
