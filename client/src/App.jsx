@@ -4,8 +4,10 @@ import Layout from './components/Layout.jsx';
 import AdminAkun from './pages/AdminAkun.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import ForgotPassword from './pages/ForgotPassword.jsx';
+import GabungKelas from './pages/GabungKelas.jsx';
 import Jadwal from './pages/Jadwal.jsx';
 import JadwalKuliah from './pages/JadwalKuliah.jsx';
+import KelasSaya from './pages/KelasSaya.jsx';
 import Laporan from './pages/Laporan.jsx';
 import Login from './pages/Login.jsx';
 import MataKuliah from './pages/MataKuliah.jsx';
@@ -65,6 +67,11 @@ export default function App() {
 
           <Route element={<RequireAuth roles={['dosen', 'admin']} />}>
             <Route path="mata-kuliah" element={<MataKuliah />} />
+          </Route>
+
+          <Route element={<RequireAuth roles={['mahasiswa']} />}>
+            <Route path="kelas-saya" element={<KelasSaya />} />
+            <Route path="gabung-kelas" element={<GabungKelas />} />
           </Route>
 
           <Route element={<RequireAuth roles={['dosen', 'mahasiswa']} />}>
