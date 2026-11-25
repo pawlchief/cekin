@@ -1,0 +1,15 @@
+node_modules
+client/node_modules
+client/dist
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+*.log
+docs
+README.md
+cek-akun.js
+Dockerfile
+compose.yaml
+.dockerignore
