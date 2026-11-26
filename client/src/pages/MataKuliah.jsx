@@ -29,6 +29,11 @@ export default function MataKuliah() {
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [copiedKode, setCopiedKode] = useState('');
 
+  // Daftar Peserta per Kelas (#26 & #27)
+  const [kelasPeserta, setKelasPeserta] = useState(null);
+  const [listPeserta, setListPeserta] = useState([]);
+  const [loadingPeserta, setLoadingPeserta] = useState(false);
+
   // Form Modal
   const [formMk, setFormMk] = useState(EMPTY_MK);
   const [formKelas, setFormKelas] = useState(EMPTY_KELAS);
@@ -70,9 +75,13 @@ export default function MataKuliah() {
     if (selectedMk?.id === mk.id) {
       setSelectedMk(null);
       setDetailMk(null);
+      setKelasPeserta(null);
+      setListPeserta([]);
       return;
     }
     setSelectedMk(mk);
+    setKelasPeserta(null);
+    setListPeserta([]);
     await loadDetailKelas(mk.id);
   }
 
@@ -98,11 +107,10 @@ export default function MataKuliah() {
       .sort((a, b) => {
         if (urutkan === 'terlama') return a.id - b.id;
         if (urutkan === 'nama') return a.nama_mk.localeCompare(b.nama_mk);
-        return b.id - a.id; // terbaru
+        return b.id - a.id;
       });
   }, [listMk, cari, filterSemester, urutkan]);
 
-  // Reset halaman ke 1 saat filter/search berubah
   useEffect(() => {
     setPage(1);
   }, [cari, filterSemester, urutkan]);
@@ -159,6 +167,8 @@ export default function MataKuliah() {
       if (selectedMk?.id === mk.id) {
         setSelectedMk(null);
         setDetailMk(null);
+        setKelasPeserta(null);
+        setListPeserta([]);
       }
       await loadMatkul();
     } catch (e) {
@@ -246,6 +256,10 @@ export default function MataKuliah() {
     try {
       const res = await api.del(`/kelas/${kls.id}`);
       setNotice(res.message);
+      if (kelasPeserta?.id === kls.id) {
+        setKelasPeserta(null);
+        setListPeserta([]);
+      }
       await loadMatkul();
       await loadDetailKelas(mkId);
     } catch (e) {
@@ -257,6 +271,46 @@ export default function MataKuliah() {
     navigator.clipboard?.writeText(kode);
     setCopiedKode(kode);
     setTimeout(() => setCopiedKode(''), 2000);
+  }
+
+  // --- PENGELOLAAN PESERTA PER KELAS (#26 & #27) ---
+  async function bukaDaftarPeserta(kls) {
+    if (kelasPeserta?.id === kls.id) {
+      setKelasPeserta(null);
+      setListPeserta([]);
+      return;
+    }
+    setKelasPeserta(kls);
+    setLoadingPeserta(true);
+    try {
+      const res = await api.get(`/kelas/${kls.id}/peserta`);
+      setListPeserta(res.data || []);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoadingPeserta(false);
+    }
+  }
+
+  async function keluarkanMahasiswa(mhs) {
+    if (!kelasPeserta) return;
+    const ok = await confirm(
+      `${mhs.nama} (${mhs.nim_nip || '-'}) akan dikeluarkan dari Kelas ${kelasPeserta.nama_kelas}.`,
+      { title: 'Keluarkan mahasiswa ini?', ok: 'Ya, keluarkan' }
+    );
+    if (!ok) return;
+
+    setNotice('');
+    setError('');
+    try {
+      const res = await api.del(`/kelas/${kelasPeserta.id}/peserta/${mhs.id}`);
+      setNotice(res.message);
+      const refreshed = await api.get(`/kelas/${kelasPeserta.id}/peserta`);
+      setListPeserta(refreshed.data || []);
+      if (selectedMk) await loadDetailKelas(selectedMk.id);
+    } catch (e) {
+      setError(e.message);
+    }
   }
 
   return (
@@ -316,7 +370,7 @@ export default function MataKuliah() {
       {notice && <Alert type="ok">{notice}</Alert>}
       {error && <Alert>{error}</Alert>}
 
-      {/* Tabel Mata Kuliah (Sesuai Figma Halaman 15) */}
+      {/* Tabel Mata Kuliah */}
       <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[780px] text-left text-sm">
@@ -426,7 +480,7 @@ export default function MataKuliah() {
           </table>
         </div>
 
-        {/* Footer Pagination (Sesuai Figma Halaman 15) */}
+        {/* Footer Pagination */}
         {!loading && filteredMk.length > 0 && (
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line bg-white px-5 py-3.5 text-xs text-muted">
             <span>
@@ -500,6 +554,8 @@ export default function MataKuliah() {
                 onClick={() => {
                   setSelectedMk(null);
                   setDetailMk(null);
+                  setKelasPeserta(null);
+                  setListPeserta([]);
                 }}
               >
                 Tutup panel
@@ -570,28 +626,36 @@ export default function MataKuliah() {
                     </div>
                   </div>
 
-                  {/* Aksi Kelas */}
+                  {/* Aksi Kelas + Tombol Lihat Peserta (#26) */}
                   <div className="flex items-center justify-between gap-2 border-t border-line pt-3">
-                    {isDosen ? (
-                      <div className="flex flex-wrap gap-1.5">
-                        <button
-                          type="button"
-                          className="btn-ghost btn-sm text-xs"
-                          onClick={() => togglePendaftaran(kls, selectedMk.id)}
-                        >
-                          {kls.is_pendaftaran_buka ? 'Tutup kode' : 'Buka kode'}
-                        </button>
-                        <button
-                          type="button"
-                          className="btn-ghost btn-sm text-xs"
-                          onClick={() => bukaModalKelas(selectedMk, kls)}
-                        >
-                          Edit
-                        </button>
-                      </div>
-                    ) : (
-                      <span className="text-xs text-muted">Mode pantau admin</span>
-                    )}
+                    <div className="flex flex-wrap gap-1.5">
+                      <button
+                        type="button"
+                        className={kelasPeserta?.id === kls.id ? 'btn-primary btn-sm text-xs' : 'btn-ghost btn-sm text-xs'}
+                        onClick={() => bukaDaftarPeserta(kls)}
+                      >
+                        Peserta{kls.jumlah_peserta !== undefined ? ` (${kls.jumlah_peserta})` : ''}
+                      </button>
+
+                      {isDosen && (
+                        <>
+                          <button
+                            type="button"
+                            className="btn-ghost btn-sm text-xs"
+                            onClick={() => togglePendaftaran(kls, selectedMk.id)}
+                          >
+                            {kls.is_pendaftaran_buka ? 'Tutup kode' : 'Buka kode'}
+                          </button>
+                          <button
+                            type="button"
+                            className="btn-ghost btn-sm text-xs"
+                            onClick={() => bukaModalKelas(selectedMk, kls)}
+                          >
+                            Edit
+                          </button>
+                        </>
+                      )}
+                    </div>
 
                     <button
                       type="button"
@@ -606,13 +670,88 @@ export default function MataKuliah() {
               ))}
             </div>
           )}
+
+          {/* Panel Daftar Peserta & Keluarkan Mahasiswa (#26 & #27) */}
+          {kelasPeserta && (
+            <div className="mt-6 rounded-2xl border border-line bg-[#f8faff] p-5">
+              <div className="flex flex-wrap items-center justify-between gap-2 pb-4">
+                <div>
+                  <h3 className="text-base font-bold text-ink">
+                    Daftar Peserta · Kelas {kelasPeserta.nama_kelas}
+                  </h3>
+                  <p className="text-xs text-muted">
+                    Total {listPeserta.length} mahasiswa terdaftar
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="btn-ghost btn-sm"
+                  onClick={() => {
+                    setKelasPeserta(null);
+                    setListPeserta([]);
+                  }}
+                >
+                  Tutup peserta
+                </button>
+              </div>
+
+              <div className="overflow-x-auto rounded-xl border border-line bg-white">
+                <table className="w-full min-w-[600px] text-left text-sm">
+                  <thead>
+                    <tr className="bg-soft text-xs font-semibold text-primary">
+                      <th className="w-12 px-4 py-3">NO</th>
+                      <th className="w-36 px-4 py-3">NIM</th>
+                      <th className="px-4 py-3">NAMA MAHASISWA</th>
+                      <th className="px-4 py-3">EMAIL</th>
+                      <th className="w-36 px-4 py-3 text-right">AKSI</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {loadingPeserta ? (
+                      <tr>
+                        <td colSpan={5} className="px-4 py-8 text-center text-muted">
+                          Memuat daftar peserta...
+                        </td>
+                      </tr>
+                    ) : listPeserta.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="px-4 py-8 text-center text-muted">
+                          Belum ada mahasiswa yang bergabung ke kelas ini.
+                        </td>
+                      </tr>
+                    ) : (
+                      listPeserta.map((mhs, idx) => (
+                        <tr key={mhs.id} className="border-t border-line odd:bg-white even:bg-[#f8faff]">
+                          <td className="px-4 py-3 text-muted">{idx + 1}</td>
+                          <td className="px-4 py-3 font-mono text-xs font-semibold text-ink">
+                            {mhs.nim_nip || '-'}
+                          </td>
+                          <td className="px-4 py-3 font-medium text-ink">{mhs.nama}</td>
+                          <td className="px-4 py-3 text-xs text-muted">{mhs.email}</td>
+                          <td className="px-4 py-3 text-right">
+                            <button
+                              type="button"
+                              onClick={() => keluarkanMahasiswa(mhs)}
+                              className="btn-danger btn-sm text-xs"
+                            >
+                              Keluarkan
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
       {/* Modal Tambah / Edit Mata Kuliah */}
       <dialog
         ref={mkDialog}
-        className="w-[min(92vw,460px)] rounded-[20px] border-0 p-6 text-ink shadow-card backdrop:bg-ink/60"
+        className="w-[min(92vw,460px)] rounded-[20px] border-0 p-6 text-white [&_.label]:text-white [&_.text-muted]:text-white/80 shadow-card backdrop:bg-ink/60"
       >
         <h2 className="text-lg font-bold">{formMk.id ? 'Edit Mata Kuliah' : 'Buat Mata Kuliah'}</h2>
         <p className="mt-1 text-[13px] text-muted">Isi data mata kuliah yang kamu ampu.</p>
@@ -682,10 +821,10 @@ export default function MataKuliah() {
         </form>
       </dialog>
 
-      {/* Modal Tambah / Edit Kelas (Sesuai Figma Halaman 16) */}
+      {/* Modal Tambah / Edit Kelas */}
       <dialog
         ref={kelasDialog}
-        className="w-[min(92vw,460px)] rounded-[20px] border-0 p-6 text-ink shadow-card backdrop:bg-ink/60"
+        className="w-[min(92vw,460px)] rounded-[20px] border-0 p-6 text-white [&_.label]:text-white [&_.text-muted]:text-white/80 shadow-card backdrop:bg-ink/60"
       >
         <h2 className="text-lg font-bold">{formKelas.id ? 'Edit Kelas' : 'Buat Kelas Baru'}</h2>
         <p className="mt-1 text-[13px] text-muted">Isi data kelas, kode join dibuat otomatis.</p>
@@ -719,7 +858,7 @@ export default function MataKuliah() {
           {!formKelas.id && (
             <div className="rounded-xl bg-soft px-4 py-3 text-xs text-primary">
               <strong>KODE JOIN:</strong> Dibuat otomatis oleh sistem saat kelas disimpan (6 karakter unik) dan
-              bisa di-generate ulang kapan saja[cite: 28].
+              bisa di-generate ulang kapan saja.
             </div>
           )}
           <div className="grid grid-cols-2 gap-3 pt-2">
