@@ -71,14 +71,14 @@ api.use(
       ...dbConfig,
       clearExpired: true,
       checkExpirationInterval: 15 * 60 * 1000,
-      expiration: 24 * 60 * 60 * 1000,
+      expiration: 12 * 60 * 60 * 1000,
       createDatabaseTable: false
     }),
     cookie: {
       httpOnly: true,
       secure: secureCookie,
       sameSite: 'strict',
-      maxAge: 24 * 60 * 60 * 1000
+      maxAge: 12 * 60 * 60 * 1000
     }
   })
 );
