@@ -2,7 +2,6 @@ const router = require('express').Router();
 const { q, one } = require('../config/db');
 const { requireRole } = require('../middleware/auth');
 
-// Batas aman kehadiran (%). Di bawah angka ini mahasiswa berstatus "Perlu perhatian".
 const BATAS_PERSEN = 75;
 
 const toId = (v) => {
@@ -10,8 +9,6 @@ const toId = (v) => {
   return Number.isInteger(n) && n > 0 ? n : null;
 };
 
-// Hanya "hadir" yang dihitung hadir. Presensi yang belum diisi dianggap alpa.
-// Pertemuan yang tanggalnya belum tiba tidak dihitung.
 function ringkas(total, hadir, izin, sakit) {
   return {
     total,
@@ -23,8 +20,6 @@ function ringkas(total, hadir, izin, sakit) {
   };
 }
 
-// Rekap satu mahasiswa di setiap kelas yang boleh dilihat pemanggil.
-// Dosen hanya melihat kelas dari mata kuliah miliknya.
 async function rekapMahasiswa(mahasiswaId, user) {
   let where = 'km.mahasiswa_id = ?';
   const params = [mahasiswaId];
@@ -64,12 +59,11 @@ async function rekapMahasiswa(mahasiswaId, user) {
 
 // ---------- #42 Rekap per mahasiswa ----------
 
-// Mahasiswa melihat rekap dirinya sendiri.
 router.get('/saya', requireRole('mahasiswa'), async (req, res) => {
   res.json({ batas: BATAS_PERSEN, data: await rekapMahasiswa(req.user.id, req.user) });
 });
 
-// Dosen/admin melihat rekap satu mahasiswa.
+
 router.get('/mahasiswa/:id', requireRole('dosen', 'admin'), async (req, res) => {
   const id = toId(req.params.id);
   if (!id) return res.status(400).json({ error: 'ID mahasiswa tidak valid.' });
@@ -80,7 +74,6 @@ router.get('/mahasiswa/:id', requireRole('dosen', 'admin'), async (req, res) => 
 
 // ---------- #43 Rekap per kelas ----------
 
-// Daftar kelas untuk pilihan filter. Dosen: kelas miliknya. Admin: semua.
 router.get('/kelas', requireRole('dosen', 'admin'), async (req, res) => {
   const params = [];
   let where = '';
@@ -100,7 +93,6 @@ router.get('/kelas', requireRole('dosen', 'admin'), async (req, res) => {
   res.json({ batas: BATAS_PERSEN, data });
 });
 
-// Rekap seluruh mahasiswa dalam satu kelas.
 router.get('/kelas/:id', requireRole('dosen', 'admin'), async (req, res) => {
   const id = toId(req.params.id);
   if (!id) return res.status(400).json({ error: 'ID kelas tidak valid.' });
@@ -152,9 +144,6 @@ const tglValid = (s) => /^\d{4}-\d{2}-\d{2}$/.test(s) && !Number.isNaN(Date.pars
 const bagi = (n, slot) => (slot > 0 ? Math.round((n / slot) * 1000) / 10 : null);
 const kosong = () => ({ hadir: 0, izin: 0, sakit: 0, alpa: 0 });
 
-// GET /api/rekap/laporan?kelas_id=&tab=sesi|kelas|periode&dari=&sampai=&status=
-// "status" memilih status yang dihitung persentasenya (kosong/semua = hadir).
-// Mahasiswa tanpa catatan presensi di suatu pertemuan dihitung alpa.
 router.get('/laporan', requireRole('dosen'), async (req, res) => {
   const kelasId = toId(req.query.kelas_id);
   if (!kelasId) return res.status(400).json({ error: 'Pilih kelas terlebih dahulu.' });
@@ -222,6 +211,27 @@ router.get('/laporan', requireRole('dosen'), async (req, res) => {
   }
 
   res.json({ batas: BATAS_PERSEN, tab, status, kelas, jumlah_mahasiswa: mhs.length, rows });
+});
+
+// ---------- #50 Riwayat presensi pribadi ----------
+
+router.get('/riwayat', requireRole('mahasiswa'), async (req, res) => {
+  const rows = await q(
+    `SELECT s.id AS sesi_id, s.tanggal, s.pertemuan_ke,
+            k.id AS kelas_id, k.nama_kelas, k.tahun_ajaran, mk.kode_mk, mk.nama_mk,
+            p.status, p.created_at AS waktu_isi
+     FROM kelas_mahasiswa km
+     JOIN kelas k ON k.id = km.kelas_id
+     JOIN mata_kuliah mk ON mk.id = k.mata_kuliah_id
+     JOIN sesi_pertemuan s ON s.kelas_id = k.id AND s.tanggal <= CURDATE()
+     LEFT JOIN presensi p ON p.sesi_id = s.id AND p.mahasiswa_id = km.mahasiswa_id
+     WHERE km.mahasiswa_id = ?
+     ORDER BY s.tanggal DESC, s.pertemuan_ke DESC, mk.nama_mk
+     LIMIT 1000`,
+    [req.user.id]
+  );
+  const data = rows.map((r) => ({ ...r, status: r.status || 'alpa', waktu_isi: r.status ? r.waktu_isi : null }));
+  res.json({ data });
 });
 
 module.exports = router;

@@ -16,12 +16,13 @@ export const NAV = {
     { to: '/rekap', label: 'Rekap & Laporan', icon: 'trend' }
   ],
 
-  mahasiswa: [
+    mahasiswa: [
     { to: '/', label: 'Dashboard', icon: 'grid', end: true },
     { to: '/kelas-saya', label: 'Kelas Saya', icon: 'book' },
     { to: '/jadwal', label: 'Jadwal', icon: 'cal' },
     { to: '/gabung-kelas', label: 'Gabung Kelas', icon: 'users' },
-    { to: '/rekap', label: 'Rekap Kehadiran', icon: 'trend' }
+    { to: '/rekap', label: 'Rekap Kehadiran', icon: 'trend' },
+    { to: '/riwayat', label: 'Riwayat Presensi', icon: 'clock' }
   ]
 };
 
