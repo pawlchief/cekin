@@ -13,6 +13,7 @@ import Profil from './pages/Profil.jsx';
 import Register from './pages/Register.jsx';
 import Rekap from './pages/Rekap.jsx';
 import ResetPassword from './pages/ResetPassword.jsx';
+import Riwayat from './pages/Riwayat.jsx';
 import { Forbidden, NotFound } from './pages/Status.jsx';
 
 // Pelindung halaman. Hak akses sebenarnya dicek di server.
@@ -74,6 +75,10 @@ export default function App() {
 
           <Route element={<RequireAuth roles={['dosen']} />}>
             <Route path="rekap/laporan" element={<Laporan />} />
+          </Route>
+
+          <Route element={<RequireAuth roles={['mahasiswa']} />}>
+            <Route path="riwayat" element={<Riwayat />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />

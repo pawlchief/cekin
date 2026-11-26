@@ -19,7 +19,8 @@ export const NAV = {
   mahasiswa: [
     { to: '/', label: 'Dashboard', icon: 'grid', end: true },
     { to: '/jadwal', label: 'Jadwal', icon: 'cal' },
-    { to: '/rekap', label: 'Rekap Kehadiran', icon: 'trend' }
+    { to: '/rekap', label: 'Rekap Kehadiran', icon: 'trend' },
+    { to: '/riwayat', label: 'Riwayat Presensi', icon: 'clock' }
   ]
 };
 
